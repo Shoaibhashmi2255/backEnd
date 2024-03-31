@@ -6,14 +6,29 @@ const mongoose = require('mongoose');
 
 
 
-router.get(`/`, async (req,res,next) => {
-    const productList = await Product.find();
 
-    if (!productList) {
-        res.status(500).json({success : false})
+router.get(`/`, async (req, res, next) => {
+    let filter = {};
+
+    if (req.query.categories) {
+        filter = { category:  req.query.categories.split(',')  };
     }
-    res.send(productList);
+
+    try {
+        const productList = await Product.find(filter).populate('category');
+
+        if (!productList || productList.length === 0) {
+            return res.status(404).json({ success: false, message: "No products found." });
+        }
+
+        res.status(200).json({ success: true, products: productList });
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).json({ success: false, message: "Internal server error." });
+    }
 });
+
+
 
 router.get(`/:id`, async (req,res,next) => {
     const product = await Product.findById({_id: req.params.id}).populate('category');
