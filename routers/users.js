@@ -4,13 +4,32 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 
 router.get(`/`, async (req, res) =>{
-    const userList = await User.find();
+    // if i want to show only specific fields 
 
+    // const userList = await User.find().select('Name email phone');
+
+    // if i don't send password hash  then i will do this
+    const user = await User.findById(req.params.id).select('-passwordHash');
+    
     if(!userList) {
         res.status(500).json({success: false})
     } 
     res.send(userList);
 });
+
+router.get('/:id', async(req,res,next) => {
+
+    
+    const user = await User.findById(req.params.id).select('-passwordHash');
+
+
+
+
+    if(!user){
+        res.status(500).json({message: 'The User with the given id was not found'});
+    }
+    res.status(200).send(user);
+})
 
 
 router.post('/', async (req,res,next) =>{
