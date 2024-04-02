@@ -1,6 +1,7 @@
 const {User} = require('../models/user');
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
 
 router.get(`/`, async (req, res) =>{
     const userList = await User.find();
@@ -12,11 +13,11 @@ router.get(`/`, async (req, res) =>{
 });
 
 
-router.post('/', async (req,res,next) => {
+router.post('/', async (req,res,next) =>{
     let user = new User({
         Name: req.body.Name,
         email: req.body.email,
-        passwordHash: req.body.password,
+        passwordHash: bcrypt.hashSync(req.body.password, 10),
         phone: req.body.phone,
         isAdmin: req.body.isAdmin,
         street: req.body.street,
@@ -25,14 +26,12 @@ router.post('/', async (req,res,next) => {
         city: req.body.city,
         country: req.body.country,
     });
-
     user = await user.save();
 
     if(!user){
-        res.status(404).json({success:false, message : 'User not created!!'})
+        return res.status(404).send('user not found!')
     };
-
-    res.status(200).send(user);
-})
+    res.send(user);
+});
 
 module.exports =router;
