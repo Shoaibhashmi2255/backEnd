@@ -30,7 +30,7 @@ app.use(morgan('tiny'));
 app.use(`${api}/products`, productRouter);
 app.use(`${api}/categories`, categoryRouter);
 app.use(`${api}/orders`, OrderRouter);
-app.use(`${api}/categories`, userRouter);
+app.use(`${api}/users`, userRouter);
 
 
 
