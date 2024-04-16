@@ -32,7 +32,6 @@ router.get('/:id', async(req,res,next) => {
     res.status(200).send(user);
 })
 
-
 router.post('/', async (req,res,next) =>{
     let user = new User({
         Name: req.body.Name,
@@ -89,67 +88,66 @@ router.put('/:id', async (req,res,next) => {
 });
 
 
-// router.post('/login' ,async (req, res, next) => {
-//     const user = await User.findOne({email : req.body.email});
-//     const secret = process.env.secret;
-//     if (!user) {
-//         return res.status(400).json({message :'User not found'})
-//     };
-//     if (user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
-//         const token = jwt.sign(
-//             {
-//                 userId : user.id
-//             },
-//             secret,
-//             {
-//                 expiresIn:'1h'
-//             }
-//         )
-//         return res.status(200).send({user: user.email, token:token})
-//     }else{
-//         return res.status(400).send('Password is wrong!!');
-//     }
-// })
-
-router.post('/login', async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
-
-        if (!user) {
-            return res.status(400).json({ message: 'User not found' });
-        }
-
-        // Log user data for debugging
-        console.log('User:', user);
-
-        // Check if user.passwordHash is undefined or null
-        if (user.passwordHash === undefined || user.passwordHash === null) {
-            console.log('user.passwordHash is undefined or null');
-            return res.status(500).json({ message: 'User password hash not found' });
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-
-        if (!isPasswordValid) {
-            return res.status(400).json({ message: 'Password is wrong' });
-        }
-
+router.post('/login' ,async (req, res, next) => {
+    const user = await User.findOne({email : req.body.email});
+    const secret = process.env.secret;
+    if (!user) {
+        return res.status(400).json({message :'User not found'})
+    };
+    if (user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
         const token = jwt.sign(
             {
-                userId: user.id
+                userId : user.id
             },
-            process.env.SECRET_KEY, // Use your actual secret key here
+            secret,
             {
-                expiresIn: '1h'
+                expiresIn:'1h'
             }
-        );
-
-        res.status(200).json({ user: user.email, token });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        )
+        return res.status(200).send({user: user.email, token:token})
+    }else{
+        return res.status(400).send('Password is wrong!!');
     }
-});
+})
+
+// router.post('/login', async (req, res, next) => {
+//     try {
+//         const { email, password } = req.body;
+//         const user = await User.findOne({ email });
+
+//         if (!user) {
+//             return res.status(400).json({ message: 'User not found' });
+//         }
+
+//         console.log('User:', user);
+
+
+//         if (user.passwordHash === undefined || user.passwordHash === null) {
+//             console.log('user.passwordHash is undefined or null');
+//             return res.status(500).json({ message: 'User password hash not found' });
+//         }
+
+//         const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+//         if (!isPasswordValid) {
+//             return res.status(400).json({ message: 'Password is wrong' });
+//         }
+
+//         const token = jwt.sign(
+//             {
+//                 userId: user.id
+//             },
+//             process.env.SECRET_KEY, // Use your actual secret key here
+//             {
+//                 expiresIn: '1h'
+//             }
+//         );
+
+//         res.status(200).json({ user: user.email, token });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// });
 
 module.exports =router;
