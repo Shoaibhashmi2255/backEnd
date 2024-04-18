@@ -108,7 +108,31 @@ router.post('/login' ,async (req, res, next) => {
     }else{
         return res.status(400).send('Password is wrong!!');
     }
-})
+});
+
+
+
+
+router.post('/register', async (req,res,next) =>{
+    let user = new User({
+        Name: req.body.Name,
+        email: req.body.email,
+        passwordHash: bcrypt.hashSync(req.body.password, 10),
+        phone: req.body.phone,
+        isAdmin: req.body.isAdmin,
+        street: req.body.street,
+        apartment: req.body.apartment,
+        zip: req.body.zip,
+        city: req.body.city,
+        country: req.body.country,
+    });
+    user = await user.save();
+
+    if(!user){
+        return res.status(404).send('This user cannot be created!')
+    };
+    res.send(user);
+});
 
 // router.post('/login', async (req, res, next) => {
 //     try {

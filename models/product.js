@@ -3,12 +3,6 @@ const mongoose = require("mongoose");
 
 
 const productSchema = mongoose.Schema({
-    // Name : String,
-    // image : String,
-    // countInStock : {
-    //     type : Number,
-    //     required : true
-    // }
 
     Name: {
         type: String,

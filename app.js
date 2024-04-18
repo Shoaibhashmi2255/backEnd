@@ -28,8 +28,13 @@ app.use(express.json());
 app.use(morgan('tiny'));
 app.use(authJwt());
 app.use(errorHandler);
- //it is for the toke authentication
 
+ //it is for the toke authentication
+// Custom middleware to log request headers
+// app.use((req, res, next) => {
+//     console.log('Request Headers:', req.headers);
+//     next();
+// });
 // Routers
 app.use(`${api}/products`, productRouter);
 app.use(`${api}/categories`, categoryRouter);
