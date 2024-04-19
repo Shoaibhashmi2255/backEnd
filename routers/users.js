@@ -30,7 +30,7 @@ router.get('/:id', async(req,res,next) => {
         res.status(500).json({message: 'The User with the given id was not found'});
     }
     res.status(200).send(user);
-})
+}) 
 
 router.post('/', async (req,res,next) =>{
     let user = new User({
@@ -97,7 +97,8 @@ router.post('/login' ,async (req, res, next) => {
     if (user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
         const token = jwt.sign(
             {
-                userId : user.id
+                userId : user.id,
+                isAdmin : user.isAdmin 
             },
             secret,
             {
@@ -133,6 +134,36 @@ router.post('/register', async (req,res,next) =>{
     };
     res.send(user);
 });
+
+
+
+router.delete("/:id", (req, res) => {
+    User.findOneAndDelete({ _id: req.params.id })
+      .then((user) => {
+        if (user) {
+          return res
+            .status(200)
+            .json({ success: true, message: "user is deleted" });
+        } else {
+          return res
+            .status(404)
+            .json({ success: false, message: "user is not deleted" });
+        }
+      })
+      .catch((err) => {
+        return res.status(404).json({ success: false, error: "err" });
+      });
+  });
+
+router.get(`/get/count`, async (req, res) => {
+    const userCount = await User.countDocuments();
+    if (!userCount) {
+      res.status(500).json({ success: false });
+    }
+    res.send({
+        userCount: userCount,
+    });
+  });
 
 // router.post('/login', async (req, res, next) => {
 //     try {
