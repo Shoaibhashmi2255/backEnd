@@ -19,12 +19,12 @@ function authJwt() {
 };
 
 async function isRevoked(req, payload) {
-  console.log(payload);
+  // console.log(payload);
   if (payload.isAdmin == false) {
-    console.log('Not Admin');
+    // console.log('Not Admin');
     return true;
   }
-  console.log('Admin');
+  // console.log('Admin');
   return false;
 }
 

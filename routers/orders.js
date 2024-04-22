@@ -4,7 +4,9 @@ const { OrderItem } = require("../models/order-items");
 const router = express.Router();
 
 router.get(`/`, async (req, res) => {
-  const orderList = await Order.find();
+  const orderList = await Order.find()
+    .populate("user", "Name")
+    .sort({ dateOrdered: -1 });
 
   if (!orderList) {
     res.status(500).json({ success: false });
@@ -12,36 +14,100 @@ router.get(`/`, async (req, res) => {
   res.send(orderList);
 });
 
-router.post("/", async (req, res, next) => {
-
-    const orderItemsIds = req.body.orderItems.map(async orderItem =>{
-        let neworderItem = new OrderItem ({
-            quantity : orderItem.quantity,
-            product : orderItem.product
-        });
-        neworderItem = await orderItemsIds.save();
-
-        return neworderItem._id;
-    })
-
-  let order = new Order({
-    orderItems: orderItemsIdsResolved,
-    shippingAddress1: req.body.shippingAddress1,
-    shippingAddress2: req.body.shippingAddress2,
-    city: req.body.city,
-    zip: req.body.zip,
-    country: req.body.country,
-    phone: req.body.phone,
-    status: req.body.status,
-    totalPrice: totalPrice,
-    user: req.body.user,
-  });
-  order = await order.save();
+router.get(`/:id`, async (req, res) => {
+  const order = await Order.findById(req.params.id)
+    .populate("user", "Name")
+    .populate({
+      path: "orderItems",
+      populate: { path: "product", populate: "category" },
+    });
 
   if (!order) {
-    return res.status(500).send({ message: "No Order" });
+    res.status(500).json({ success: false });
   }
+  res.send(order);
+});
+
+try {
+  router.post("/", async (req, res, next) => {
+    const orderItemsIds = await Promise.all(
+      req.body.orderItems.map(async (orderItem) => {
+        let neworderItem = new OrderItem({
+          quantity: orderItem.quantity,
+          product: orderItem.product,
+        });
+        neworderItem = await neworderItem.save();
+
+        return neworderItem._id;
+      })
+    );
+
+    const orderItemsResolved = await orderItemsIds;
+
+    const totalPrices = await Promise.all(orderItemsResolved.map(async (orderItemId) => {
+      const orderItem = await OrderItem.findById(orderItemId).populate('product' , 'price');
+      const totalPrice = orderItem.product.price * orderItem.quantity;
+      return totalPrice
+    }))
+
+    const totalPrice = totalPrices.reduce((a , b) => a + b , 0)
+
+    let order = new Order({
+      orderItems: orderItemsResolved,
+      shippingAddress1: req.body.shippingAddress1,
+      shippingAddress2: req.body.shippingAddress2,
+      city: req.body.city,
+      zip: req.body.zip,
+      country: req.body.country,
+      phone: req.body.phone,
+      status: req.body.status,
+      totalPrice: totalPrice,
+      user: req.body.user,
+    });
+    order = await order.save();
+
+    if (!order) {
+      return res.status(500).send({ message: "No Order" });
+    }
     res.send(order);
+  });
+} catch (error) {
+  res.status(500).send(error);
+}
+
+router.put("/:id", async (req, res) => {
+  const order = await Order.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      status: req.body.status,
+    },
+    { new: true }
+  );
+  if (!order) {
+    return res.status(500).send("Order not found!");
+  }
+  res.send(order);
+});
+
+router.delete("/:id", (req, res) => {
+  Order.findOneAndDelete({ _id: req.params.id })
+    .then(async (order) => {
+      if (order) {
+        await order.orderItems.map(async (orderItem) => {
+          await OrderItem.findByIdAndRemove(orderItem);
+        });
+        return res
+          .status(200)
+          .json({ success: true, message: "Order is deleted" });
+      } else {
+        return res
+          .status(404)
+          .json({ success: false, message: "Order is not deleted" });
+      }
+    })
+    .catch((err) => {
+      return res.status(404).json({ success: false, error: err });
+    });
 });
 
 module.exports = router;
