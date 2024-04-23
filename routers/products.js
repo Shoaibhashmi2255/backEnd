@@ -3,6 +3,7 @@ const { Product } = require("../models/product");
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
+const multer = require('multer');
 
 router.get(`/`, async (req, res, next) => {
   // localhost:3000/api/v1/products?categories=2342342,234234
