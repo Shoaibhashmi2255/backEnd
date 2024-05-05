@@ -25,6 +25,7 @@ router.get('/:id', async (req,res) => {
 router.post('/', async (req,res,next) =>{
     let category = new Category({
         Name : req.body.Name,
+        id : req.body.id,
         image : req.body.image,
         icon : req.body.icon
     });
