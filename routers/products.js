@@ -38,10 +38,12 @@ router.get(`/`, async (req, res, next) => {
 
   if (req.query.categories) {
     filter = { category: req.query.categories.split(",") };
+    console.log(filter);
   }
 
   try {
     const productList = await Product.find(filter).populate("category");
+    console.log(productList);
 
     if (!productList || productList.length === 0) {
       return res
