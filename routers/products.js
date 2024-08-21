@@ -33,17 +33,23 @@ const storage = multer.diskStorage({
 const uploadOptions = multer({ storage: storage });
 
 router.get(`/`, async (req, res, next) => {
-  // localhost:3000/api/v1/products?categories=2342342,234234
   let filter = {};
 
-  if (req.query.categories) {
-    filter = { category: req.query.categories.split(",") };
-    console.log(filter);
+  if (req.query.category) {
+    const categoryIds = req.query.category.split(",").map((id) => {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid category ID format." });
+      }
+      return new mongoose.Types.ObjectId(id);
+    });
+
+    filter = { category: { $in: categoryIds } };
   }
 
   try {
     const productList = await Product.find(filter).populate("category");
-    console.log(productList);
 
     if (!productList || productList.length === 0) {
       return res
@@ -192,10 +198,54 @@ router.get(`/get/featured/:count`, async (req, res) => {
   res.send(products);
 });
 
+// router.put(
+//   "/gallery-images/:id",
+//   uploadOptions.array("images", 20),
+//   async (req, res, next) => {
+//     console.log(
+//       "PUT request received for gallery-images with ID:",
+//       req.params.id
+//     );
+
+//     try {
+//       if (!mongoose.isValidObjectId(req.params.id)) {
+//         return res.status(400).send("Invalid Product Id");
+//       }
+
+//       let imagesPaths = [];
+//       const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+//       const files = req.files;
+
+//       if (files) {
+//         files.forEach((file) => {
+//           imagesPaths.push(`${basePath}${file.filename}`); // Use file.filename instead of file.fileName
+//         });
+//       }
+
+//       const product = await Product.findByIdAndUpdate(
+//         req.params.id,
+//         {
+//           images: imagesPaths,
+//         },
+//         { new: true }
+//       );
+
+//       if (!product) {
+//         return res.status(500).send("Product not Updated!");
+//       }
+
+//       res.send(product);
+//     } catch (error) {
+//       console.error("Error updating product:", error);
+//       res.status(500).send("Internal Server Error");
+//     }
+//   }
+// );
+
 router.put(
   "/gallery-images/:id",
   uploadOptions.array("images", 20),
-  async (req, res, next) => {
+  async (req, res) => {
     try {
       if (!mongoose.isValidObjectId(req.params.id)) {
         return res.status(400).send("Invalid Product Id");
@@ -207,7 +257,7 @@ router.put(
 
       if (files) {
         files.forEach((file) => {
-          imagesPaths.push(`${basePath}${file.filename}`); // Use file.filename instead of file.fileName
+          imagesPaths.push(`${basePath}${file.filename}`);
         });
       }
 

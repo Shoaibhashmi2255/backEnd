@@ -6,11 +6,11 @@ const productSchema = mongoose.Schema({
 
     Name: {
         type: String,
-        required: true,
+        required: false,
     },
     description: {
         type: String,
-        required: true
+        required: false
     },
     richDescription: {
         type: String,
@@ -34,11 +34,11 @@ const productSchema = mongoose.Schema({
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',
-        required:true
+        required:false
     },
     countInStock: {
         type: Number,
-        required: true,
+        required: false,
         min: 0,
         max: 255
     },

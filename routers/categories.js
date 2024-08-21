@@ -1,4 +1,4 @@
-const { Category } = require("../models/category");
+const {Category} = require("../models/category");
 const express = require("express");
 const router = express.Router();
 
@@ -8,15 +8,13 @@ router.get(`/`, async (req, res) => {
   if (!categoryList) {
     res.status(500).json({ success: false });
   }
-  res.send(categoryList);
+  res.status(200).send(categoryList);
 });
 
 router.get("/:id", async (req, res) => {
   const category = await Category.findById({ _id: req.params.id });
   if (!category) {
-    res
-      .status(500)
-      .json({ message: "The Category woth the given id was not found" });
+    res.status(500).json({ message: "The Category woth the given id was not found" });
   }
   res.status(200).send(category);
 });
@@ -32,7 +30,7 @@ router.post("/", async (req, res, next) => {
   category = await category.save();
 
   if (!category) {
-    return res.status(404).send("Category not found!");
+    return res.status(404).send("Category not created!");
   }
   res.send(category);
 });
