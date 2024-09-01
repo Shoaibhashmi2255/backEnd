@@ -46,6 +46,9 @@ try {
 
     const totalPrices = await Promise.all(orderItemsResolved.map(async (orderItemId) => {
       const orderItem = await OrderItem.findById(orderItemId).populate('product' , 'price');
+      if (!orderItem || !orderItem.product) {
+        throw new Error(`Product not found for OrderItem with ID ${orderItemId}`);
+      }
       const totalPrice = orderItem.product.price * orderItem.quantity;
       return totalPrice
     }))
