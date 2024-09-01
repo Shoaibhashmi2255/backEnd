@@ -51,6 +51,8 @@ mongoose.connect(process.env.CONNECTION_STRING).then(()=> {
     console.log(err);
 })
 
-app.listen(3000, () => {
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
     console.log("server is running: http://localhost:3000");
 });
